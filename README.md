@@ -66,7 +66,7 @@ User → React Frontend → FastAPI Backend → AI Agents → LLM APIs
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/datapilot-ai.git
+git clone https://github.com/Honney9/DataPilot-AI
 cd datapilot-ai
 ```
 
