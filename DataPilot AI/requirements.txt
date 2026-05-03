@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pandas
+numpy
+python-multipart
+python-dotenv
+
+openai
+google-generativeai
+
+reportlab
+
+pydantic
