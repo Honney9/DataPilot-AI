@@ -60,7 +60,7 @@ export function FileUploader() {
           </div>
           <div>
             <div className="font-semibold">Drop your dataset here</div>
-            <div className="text-sm text-muted-foreground mt-1">CSV or XLSX · sent securely to /upload</div>
+            <div className="text-sm text-muted-foreground mt-1">CSV or XLSX</div>
           </div>
           <Button type="button" variant="outline" size="sm" className="mt-2">Browse files</Button>
         </div>

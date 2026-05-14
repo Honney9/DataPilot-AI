@@ -33,40 +33,44 @@ Dataset Summary:
         print("🧠 Calling LLM...")
 
         prompt = f"""
-You are a senior data analyst creating a professional report.
+You are a senior data analyst.
+
+Create a PROFESSIONAL, DETAILED, STRUCTURED report.
+
+STRICT RULES:
+- NO markdown symbols (no ##, no *)
+- Use clear plain text
+- Be data-driven (use numbers from analysis)
+- Be specific, not generic
+- Write like a real business report
+
+OUTPUT FORMAT (STRICT):
+
+TITLE: AI Data Analysis Report
+
+SECTION: Overview
+<detailed paragraph>
+
+SECTION: Data Quality
+<missing values, duplicates, issues>
+
+SECTION: Statistical Summary
+<mean, median, std insights>
+
+SECTION: Key Findings
+<data-driven observations>
+
+SECTION: Insights
+<patterns, correlations explained>
+
+SECTION: Recommendations
+<actionable business suggestions>
 
 DATA ANALYSIS:
 {analysis}
 
 INSIGHTS:
 {insights}
-
-TASK:
-Generate a structured, high-quality report.
-
-STRICT FORMAT:
-
-TITLE: AI Data Analysis Report
-
-SECTION: Overview
-Write a clear summary of the dataset.
-
-SECTION: Data Quality
-Explain missing values, issues.
-
-SECTION: Key Findings
-Highlight important patterns.
-
-SECTION: Insights
-Explain trends and relationships.
-
-SECTION: Recommendations
-Give actionable suggestions.
-
-RULES:
-- Be specific
-- No generic text
-- Use data context
 """
 
         # ✅ CALL LLM
@@ -106,26 +110,27 @@ RULES:
         }
 
     def parse_report(self, text):
+        import re
+
         title = "AI Data Analysis Report"
         sections = []
 
-        parts = text.split("SECTION:")
+        # Extract title
+        title_match = re.search(r"TITLE:\s*(.*)", text)
+        if title_match:
+            title = title_match.group(1).strip()
 
-        for part in parts:
-            part = part.strip()
+        # Extract sections
+        section_matches = re.findall(
+            r"SECTION:\s*(.*?)\n(.*?)(?=SECTION:|$)",
+            text,
+            re.DOTALL
+        )
 
-            if part.startswith("TITLE:"):
-                title = part.replace("TITLE:", "").strip()
-
-            elif part:
-                lines = part.split("\n")
-                sec_title = lines[0].strip()
-                body = "\n".join(lines[1:]).strip()
-
-                if sec_title and body:
-                    sections.append({
-                        "title": sec_title,
-                        "body": body
-                    })
+        for sec_title, sec_body in section_matches:
+            sections.append({
+                "title": sec_title.strip(),
+                "body": sec_body.strip()
+            })
 
         return title, sections

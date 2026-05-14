@@ -6,8 +6,11 @@ import pandas as pd
 import uuid
 
 from memory.session_memory import memory
+from agents.cleaning_agent import CleaningAgent   # ✅ ADD THIS
 
 router = APIRouter(prefix="/upload")
+
+cleaner = CleaningAgent()   # ✅ INIT
 
 
 @router.post("")
@@ -35,19 +38,39 @@ async def upload_file(
         return {"error": str(e)}
 
     # ---------------------------
-    # SESSION HANDLING
+    # SESSION ID
     # ---------------------------
     if not session_id:
         session_id = str(uuid.uuid4())
 
-    # 🔥 STORE FULL STATE (IMPORTANT)
+    # ---------------------------
+    # 🔥 RUN CLEANING AGENT
+    # ---------------------------
+    cleaning_result = cleaner.run({
+        "ingestion": {
+            "status": "success",
+            "data": df
+        }
+    })
+
+    if cleaning_result["status"] != "success":
+        return cleaning_result
+
+    # cleaned_df = cleaning_result["data"]
+
+    # ---------------------------
+    # 🔥 STORE BOTH RAW + CLEAN
+    # ---------------------------
     state = {
         "file_path": file_path,
         "data": df,
-        "history": []
+        "cleaning": cleaning_result,   # ✅ FULL RESULT
+        "history": ["upload", "cleaning"]
     }
 
     memory.set_state(session_id, state)
+
+    print("✅ Upload + Cleaning complete")
 
     return {
         "session_id": session_id,

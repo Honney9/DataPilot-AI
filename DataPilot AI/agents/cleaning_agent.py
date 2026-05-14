@@ -62,19 +62,75 @@ class CleaningAgent:
         # ---------------------------
 
         df_cleaned = df.copy()
+        
 
+        # ---------------------------
         # 1. Remove duplicates
+        # ---------------------------
         df_cleaned = df_cleaned.drop_duplicates()
 
-        # 2. Handle missing values
+        # ---------------------------
+        # 2. Fix datatypes
+        # ---------------------------
+        for col in df_cleaned.columns:
+            try:
+                df_cleaned[col] = pd.to_numeric(df_cleaned[col])
+            except:
+                pass
+
+        # ---------------------------
+        # 3. Handle missing values (SMART)
+        # ---------------------------
         for col in df_cleaned.columns:
             if df_cleaned[col].dtype in ["float64", "int64"]:
                 df_cleaned[col] = df_cleaned[col].fillna(df_cleaned[col].median())
             else:
-                df_cleaned[col] = df_cleaned[col].fillna("Unknown")
+                if not df_cleaned[col].mode().empty:
+                    df_cleaned[col] = df_cleaned[col].fillna(df_cleaned[col].mode()[0])
+                else:
+                    df_cleaned[col] = df_cleaned[col].fillna("Unknown")
 
-        # 3. Standardize column names
-        df_cleaned.columns = [col.strip().lower().replace(" ", "_") for col in df_cleaned.columns]
+        # ---------------------------
+        # 4. Outlier handling (IQR)
+        # ---------------------------
+        for col in df_cleaned.select_dtypes(include=["int64", "float64"]).columns:
+            q1 = df_cleaned[col].quantile(0.25)
+            q3 = df_cleaned[col].quantile(0.75)
+            iqr = q3 - q1
+
+            lower = q1 - 1.5 * iqr
+            upper = q3 + 1.5 * iqr
+
+            df_cleaned[col] = df_cleaned[col].clip(lower, upper)
+
+        # ---------------------------
+        # 5. Clean strings
+        # ---------------------------
+        for col in df_cleaned.select_dtypes(include=["object"]).columns:
+            df_cleaned[col] = df_cleaned[col].astype(str).str.strip().str.lower()
+
+        # ---------------------------
+        # 6. Date parsing
+        # ---------------------------
+        for col in df_cleaned.columns:
+            if "date" in col.lower():
+                df_cleaned[col] = pd.to_datetime(df_cleaned[col], errors="coerce")
+
+        # ---------------------------
+        # 7. Drop highly empty columns
+        # ---------------------------
+        threshold = len(df_cleaned) * 0.5
+        df_cleaned = df_cleaned.dropna(axis=1, thresh=threshold)
+
+        # ---------------------------
+        # 8. Normalize column names
+        # ---------------------------
+        df_cleaned.columns = [
+            col.strip().lower().replace(" ", "_")
+            for col in df_cleaned.columns
+        ]
+        
+        state["clean_data"] = df_cleaned
 
         # ---------------------------
         # SAVE FILE (UNIQUE NAME)

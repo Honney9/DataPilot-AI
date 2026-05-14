@@ -32,6 +32,8 @@ class QueryAgent:
         # 🔥 SMART DATA CONTEXT
         # ---------------------------
         preview = df.head(10).to_dict(orient="records")
+        summary_stats = df.describe(include="all").to_dict()
+        missing = df.isnull().sum().to_dict()
         columns = list(df.columns)
 
         analysis = state.get("analysis", {}).get("data", "")
@@ -41,13 +43,19 @@ class QueryAgent:
         # PROMPT
         # ---------------------------
         prompt = f"""
-    You are a data analyst.
+    You are a senior data analyst.
 
     AVAILABLE COLUMNS:
     {columns}
 
     DATA SAMPLE:
     {preview}
+
+    DATA SUMMARY:
+    {summary_stats}
+
+    MISSING VALUES:
+    {missing}
 
     ANALYSIS:
     {analysis}
@@ -58,17 +66,40 @@ class QueryAgent:
     USER QUESTION:
     {query}
 
+    Return ONLY markdown in this structure:
+
+    ## 📊 Overview
+    (Explain dataset clearly)
+
+    ## 📈 Key Statistics
+    (Bullet points with real numbers, mean, ranges, distributions)
+
+    ## 🔍 Patterns & Trends
+    (Relationships, correlations, behavior patterns)
+
+    ## 🧠 Insights
+    (Deep reasoning, not obvious statements)
+
+    ## ⚠️ Observations
+    (Data issues, anomalies, missing values)
+
+    ## ✅ Recommendations
+    (Actionable suggestions based ONLY on data)
+
+    ---------------------------
     RULES:
-    - Answer ONLY using the dataset
-    - Do NOT hallucinate
-    - If data is missing → say "Not enough data"
-    - Be short and precise
-    - If numeric → calculate correctly
+    - Use ONLY given dataset
+    - DO NOT hallucinate
+    - Be detailed but clear
+    - Use numbers wherever possible
+    - Avoid generic statements
+    - Keep formatting clean (no random symbols like ## inside text)
+    - Do NOT return anything outside markdown
 
     ANSWER:
     """
 
-        response = self.llm.generate(prompt, task="fast")
+        response = self.llm.generate(prompt, task="reasoning")
 
         print("===== LLM RESPONSE =====")
         print(response)

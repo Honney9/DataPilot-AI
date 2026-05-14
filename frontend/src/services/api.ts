@@ -141,10 +141,15 @@ getInsights: async (): Promise<Insights> => {
   return await request(`/insights?session_id=${session_id}`);
 },
 
-    reportDownloadUrl: () => {
-        const session_id = getSessionId();
-        return `${API_BASE}/report/download?session_id=${session_id}`;
-    },
+  downloadCleanedData: () => {
+    const session_id = getSessionId();
+    return `${API_BASE}/data/download?session_id=${session_id}`;
+  },
+
+  reportDownloadUrl: () => {
+      const session_id = getSessionId();
+      return `${API_BASE}/report/download?session_id=${session_id}`;
+  },
   
   generateReport: async (): Promise<Report> => {
   const session_id = getSessionId();

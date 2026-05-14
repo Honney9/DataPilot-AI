@@ -47,7 +47,7 @@ export function ChatWindow() {
           </div>
           <div>
             <div className="text-sm font-semibold">Data Agent</div>
-            <div className="text-[11px] text-muted-foreground">LangChain · session {sessionId.slice(0, 8)}</div>
+            <div className="text-[11px] text-muted-foreground">session {sessionId.slice(0, 8)}</div>
           </div>
         </div>
         {chat.length > 0 && (
