@@ -51,7 +51,6 @@ outputs/reports/
 # Generated files
 *.csv
 *.xlsx
-*.json
 *.pdf
 
 # =========================
