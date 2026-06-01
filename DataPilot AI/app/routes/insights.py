@@ -50,21 +50,39 @@ def get_insights(session_id: str = Query(...)):
 
     if len(numeric_df.columns) > 1:
         corr_matrix = numeric_df.corr()
+        seen = set()
 
         for col in corr_matrix.columns:
             for idx in corr_matrix.index:
-                if col != idx:
-                    value = corr_matrix.loc[idx, col]
 
-                    # ✅ only meaningful correlations
-                    if abs(value) > 0.2:
-                        correlations.append({
-                            "pair": f"{idx} vs {col}",
-                            "value": round(float(value), 2)
-                        })
+                # skip self-correlation
+                if col == idx:
+                    continue
 
-    # sort strongest first
-    correlations = sorted(correlations, key=lambda x: abs(x["value"]), reverse=True)[:10]
+                # avoid duplicate pairs
+                pair_key = tuple(sorted([col, idx]))
+
+                if pair_key in seen:
+                    continue
+
+                seen.add(pair_key)
+
+                value = corr_matrix.loc[idx, col]
+
+                # only meaningful correlations
+                if abs(value) > 0.2:
+                    correlations.append({
+                        "a": idx,
+                        "b": col,
+                        "value": round(float(value), 2)
+                    })
+
+    # strongest first
+    correlations = sorted(
+        correlations,
+        key=lambda x: abs(x["value"]),
+        reverse=True
+    )[:10]
 
     # ---------------------------
     # 📈 TRENDS (REAL LOGIC)
