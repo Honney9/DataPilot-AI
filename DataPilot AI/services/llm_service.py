@@ -3,7 +3,7 @@
 import os
 import time
 from openai import OpenAI
-from google import genai
+import google.generativeai as genai
 
 from dotenv import load_dotenv
 load_dotenv()
